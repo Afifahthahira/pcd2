@@ -1,12 +1,7 @@
-from flask import Flask, send_file, request, jsonify, render_template
+from flask import Flask, render_template, jsonify, request
 import mysql.connector
 from mysql.connector import Error
-
-import os
-
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+import pymysql
 
 app = Flask(__name__)
 
@@ -31,7 +26,20 @@ def get_db_connection():
 # Serve the home page
 @app.route('/')
 def home():
-    return render_template('index.html')
+    # Koneksi ke database
+    connection = pymysql.connect(**db_config)
+    cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+    # Query untuk mendapatkan data
+    cursor.execute("SELECT id, barcode, image, name, stock FROM products")
+    products = cursor.fetchall()
+
+    # Tutup koneksi
+    cursor.close()
+    connection.close()
+
+    # Kirim data ke template
+    return render_template('index.html', products=products)
 
 # Serve the "add product" page
 @app.route('/add_product')
@@ -156,8 +164,6 @@ def produk_keluar():
             return jsonify({'error': str(e)}), 400
 
     return render_template('produk_keluar.html')
-
-
 
 
 if __name__ == '__main__':
