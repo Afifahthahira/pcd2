@@ -1,7 +1,12 @@
-from flask import Flask, send_file, request, render_template
-import cv2
-import numpy as np
-from pyzbar.pyzbar import decode
+from flask import Flask, send_file, request, jsonify, render_template
+import mysql.connector
+from mysql.connector import Error
+
+import os
+
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 app = Flask(__name__)
 
@@ -26,16 +31,63 @@ def get_db_connection():
 # Serve the home page
 @app.route('/')
 def home():
-        return render_template('index.html')
+    return render_template('index.html')
 
 # Serve the "add product" page
 @app.route('/add_product')
 def add():
-    try:
-        return send_file('tambah-produk.html')
-    except FileNotFoundError:
-        return "index.html file not found. Please ensure the file exists.", 404
+    return render_template('tambah-produk.html')
 
+# API untuk menambahkan produk
+@app.route('/api/add_product', methods=['POST'])
+def api_add_product():
+    try:
+        # Ambil data dari form
+        barcode = request.form.get('barcode')
+        name = request.form.get('nama')
+        stock = request.form.get('stok')
+
+        # # Ambil file gambar
+        # image = request.files.get('gambar')
+        # if not image:
+        #     return jsonify({'error': 'File gambar wajib diunggah.'}), 400
+
+        # Simpan gambar ke folder lokal (opsional, jika ingin menyimpan file)
+        # image_path = f"uploads/{image.filename}"
+        # image.save(image_path)
+
+        # Simpan data ke database
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            query = "INSERT INTO products (barcode, name, stock) VALUES (%s, %s, %s)"
+            cursor.execute(query, (barcode, name, stock))
+            conn.commit()
+            return jsonify({'message': 'Produk berhasil ditambahkan!'}), 201
+        else:
+            return jsonify({'error': 'Database connection failed.'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+# API untuk mendapatkan daftar produk
+@app.route('/api/products', methods=['GET'])
+def api_get_products():
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        try:
+            query = "SELECT * FROM daftar_produk"
+            cursor.execute(query)
+            products = cursor.fetchall()
+            return jsonify(products), 200
+        except Error as e:
+            return jsonify({'error': str(e)}), 500
+        finally:
+            cursor.close()
+            conn.close()
+    else:
+        return jsonify({'error': 'Database connection failed.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
