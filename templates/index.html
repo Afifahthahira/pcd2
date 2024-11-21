@@ -107,92 +107,134 @@
         .btn-add i {
             margin-right: 8px;
         }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background: #343a40;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: #495057;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <i class="fas fa-boxes me-2"></i>
-                Dashboard Produk
-            </a>
-        </div>
-    </nav>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4 class="text-center">HerbaLife</h4>
+        <hr>
+        <a href="index.html" class="active">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="/add_product">
+            <i class="fas fa-plus"></i> Tambah Produk
+        </a>
+        <a href="/produk_masuk">
+            <i class="fas fa-box"></i> Produk Masuk
+        </a>
+        <a href="/produk_keluar">
+            <i class="fas fa-truck"></i> Produk Keluar
+        </a>
+    </div>
 
-    <div class="container">
-        <div class="row align-items-center mb-4">
-            <div class="col-12 col-md-4">
-                <h1 class="page-header m-0">Daftar Produk</h1>
-            </div>
-            <div class="col-12 col-md-4 my-3 my-md-0">
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="form-control search-input" placeholder="Cari produk...">
-                </div>
-            </div>
-            <div class="col-12 col-md-4 text-md-end">
-                <a href="/add_product" class="btn btn-primary btn-add">
-                    <i class="fas fa-plus"></i>
-                    Tambah Produk
+    <!-- Main Content -->
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="fas fa-boxes me-2"></i>
+                    Dashboard Produk
                 </a>
             </div>
-        </div>
+        </nav>
 
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">No</th>
-                                <th>Barcode</th>
-                                <th>Gambar</th>
-                                <th>Nama Produk</th>
-                                <th class="text-center">Stok</th>
-                                <th class="text-center pe-4">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="ps-4">1</td>
-                                <td class="barcode">1234567890</td>
-                                <td>
-                                    <img src="/api/placeholder/50/50" alt="Produk A" class="img-thumbnail">
-                                </td>
-                                <td>Produk A</td>
-                                <td class="text-center">
-                                    <span class="stock-badge bg-success text-white">50</span>
-                                </td>
-                                <td class="text-center pe-4">
-                                    <button class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="ps-4">2</td>
-                                <td class="barcode">0987654321</td>
-                                <td>
-                                    <img src="/api/placeholder/50/50" alt="Produk B" class="img-thumbnail">
-                                </td>
-                                <td>Produk B</td>
-                                <td class="text-center">
-                                    <span class="stock-badge bg-warning text-white">30</span>
-                                </td>
-                                <td class="text-center pe-4">
-                                    <button class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <div class="container">
+            <div class="row align-items-center mb-4">
+                <div class="col-12 col-md-4">
+                    <h1 class="page-header m-0">Daftar Produk</h1>
+                </div>
+                <div class="col-12 col-md-4 my-3 my-md-0">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-control search-input" placeholder="Cari produk...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">No</th>
+                                    <th>Barcode</th>
+                                    <th>Gambar</th>
+                                    <th>Nama Produk</th>
+                                    <th class="text-center">Stok</th>
+                                    <th class="text-center pe-4">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="ps-4">1</td>
+                                    <td class="barcode">1234567890</td>
+                                    <td>
+                                        <img src="/api/placeholder/50/50" alt="Produk A" class="img-thumbnail">
+                                    </td>
+                                    <td>Produk A</td>
+                                    <td class="text-center">
+                                        <span class="stock-badge bg-success text-white">50</span>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="ps-4">2</td>
+                                    <td class="barcode">0987654321</td>
+                                    <td>
+                                        <img src="/api/placeholder/50/50" alt="Produk B" class="img-thumbnail">
+                                    </td>
+                                    <td>Produk B</td>
+                                    <td class="text-center">
+                                        <span class="stock-badge bg-warning text-white">30</span>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <button class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

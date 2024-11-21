@@ -89,5 +89,76 @@ def api_get_products():
     else:
         return jsonify({'error': 'Database connection failed.'}), 500
 
+# produk masuk
+
+# Rute untuk menampilkan halaman Produk Masuk
+@app.route('/produk_masuk')
+def produk_masuk():
+    return render_template('produk_masuk.html')  # Template untuk produk masuk
+
+# API untuk menambahkan produk yang masuk
+@app.route('/api/produk_masuk', methods=['POST'])
+def api_produk_masuk():
+    try:
+        # Ambil data dari form
+        barcode = request.form.get('barcode')
+        jumlah_masuk = request.form.get('jumlah_masuk')
+
+        # Simpan data ke database
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            query = "UPDATE products SET stock = stock + %s WHERE barcode = %s"
+            cursor.execute(query, (jumlah_masuk, barcode))
+            conn.commit()
+            return jsonify({'message': 'Produk berhasil ditambahkan ke stok!'}), 201
+        else:
+            return jsonify({'error': 'Database connection failed.'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    
+# produk keluar
+
+@app.route('/produk_keluar', methods=['GET', 'POST'])
+def produk_keluar():
+    if request.method == 'POST':
+        try:
+            # Ambil data dari form
+            barcode = request.form.get('barcode')
+            quantity = int(request.form.get('quantity'))
+
+            # Koneksi ke database
+            conn = get_db_connection()
+            if conn:
+                cursor = conn.cursor()
+
+                # Cek stok produk yang ada
+                cursor.execute("SELECT stock FROM products WHERE barcode = %s", (barcode,))
+                product = cursor.fetchone()
+
+                if product:
+                    current_stock = product[0]
+
+                    # Periksa apakah stok cukup
+                    if current_stock >= quantity:
+                        # Kurangi stok
+                        new_stock = current_stock - quantity
+                        cursor.execute("UPDATE products SET stock = %s WHERE barcode = %s", (new_stock, barcode))
+                        conn.commit()
+                        return jsonify({'message': 'Produk berhasil dikeluarkan, stok diperbarui!'}), 200
+                    else:
+                        return jsonify({'error': 'Stok tidak cukup untuk produk ini.'}), 400
+                else:
+                    return jsonify({'error': 'Produk tidak ditemukan.'}), 404
+            else:
+                return jsonify({'error': 'Database connection failed.'}), 500
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+
+    return render_template('produk_keluar.html')
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
