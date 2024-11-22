@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Produk Keluar - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .navbar-brand {
+            color: #333 !important;
+            font-weight: 600;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .scanner-container {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .scanner-container.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-boxes me-2"></i> Dashboard Produk Keluar
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="mb-4">Form Produk Keluar</h1>
+                <form action="/api/product_exit" method="POST">
+                    <div class="mb-3">
+                        <label for="barcode" class="form-label">Barcode</label>
+                        <div class="input-group">
+                            <input type="text" id="barcode" name="barcode" class="form-control" required>
+                            <button type="button" class="btn btn-secondary" id="toggleScanner">
+                                <i class="fas fa-camera"></i> Scan
+                            </button>
+                        </div>
+                        <div id="reader" class="scanner-container"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="jumlah" class="form-label">Jumlah Keluar</label>
+                        <input type="number" id="jumlah" name="jumlah" class="form-control" min="1" required>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const scannerContainer = document.getElementById('reader');
+        const toggleScanner = document.getElementById('toggleScanner');
+        let html5QrCode = null;
+
+        toggleScanner.addEventListener('click', function () {
+            if (!html5QrCode) {
+                scannerContainer.classList.add('active');
+                html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: 250 },
+                    (decodedText) => {
+                        document.getElementById('barcode').value = decodedText;
+                        html5QrCode.stop();
+                        html5QrCode = null;
+                        scannerContainer.classList.remove('active');
+                    },
+                    (error) => console.warn(error)
+                );
+            } else {
+                html5QrCode.stop();
+                html5QrCode = null;
+                scannerContainer.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
