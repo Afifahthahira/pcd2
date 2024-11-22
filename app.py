@@ -97,6 +97,32 @@ def api_get_products():
     else:
         return jsonify({'error': 'Database connection failed.'}), 500
 
+# API to delete a product
+@app.route('/api/delete_product', methods=['POST'])
+def api_delete_product():
+    try:
+        # Get barcode from the request
+        barcode = request.form.get('barcode')
+
+        # Connect to the database
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            query = "DELETE FROM products WHERE barcode = %s"
+            cursor.execute(query, (barcode,))
+            conn.commit()
+
+            # Check if any rows were affected
+            if cursor.rowcount > 0:
+                return jsonify({'message': 'Produk berhasil dihapus!'}), 200
+            else:
+                return jsonify({'error': 'Produk tidak ditemukan.'}), 404
+        else:
+            return jsonify({'error': 'Database connection failed.'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
 # produk masuk
 
 # Rute untuk menampilkan halaman Produk Masuk

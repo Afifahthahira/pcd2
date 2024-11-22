@@ -194,44 +194,38 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for product in products %}
                             <tr>
-                                <td class="ps-4">1</td>
-                                <td class="barcode">1234567890</td>
+                                <td class="ps-4">{{ loop.index }}</td>
+                                <td class="barcode">{{ product.barcode }}</td>
                                 <td>
-                                    <img src="/api/placeholder/50/50" alt="Produk A" class="img-thumbnail">
+                                    <img src="{{ product.image if product.image else '/api/placeholder/50/50' }}" 
+                                         alt="{{ product.name }}" 
+                                         class="img-thumbnail" 
+                                         width="50" height="50">
                                 </td>
-                                <td>Produk A</td>
+                                <td>{{ product.name }}</td>
                                 <td class="text-center">
-                                    <span class="stock-badge bg-success text-white">50</span>
+                                    <span class="stock-badge 
+                                        {% if product.stock > 50 %} bg-success 
+                                        {% elif product.stock > 10 %} bg-warning 
+                                        {% else %} bg-danger {% endif %} 
+                                        text-white">
+                                        {{ product.stock }}
+                                    </span>
                                 </td>
                                 <td class="text-center pe-4">
                                     <button class="btn btn-sm btn-outline-primary me-1">
                                         <i class="fas fa-edit"></i>
                                     </button>
+                                    <form action="/api/delete_product" method="POST" style="display:inline;">
+                                        <input type="hidden" name="barcode" value="{{ product['barcode'] }}">
                                     <button class="btn btn-sm btn-outline-danger">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </td>
                             </tr>
-                            <tr>
-                                <td class="ps-4">2</td>
-                                <td class="barcode">0987654321</td>
-                                <td>
-                                    <img src="/api/placeholder/50/50" alt="Produk B" class="img-thumbnail">
-                                </td>
-                                <td>Produk B</td>
-                                <td class="text-center">
-                                    <span class="stock-badge bg-warning text-white">30</span>
-                                </td>
-                                <td class="text-center pe-4">
-                                    <button class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
