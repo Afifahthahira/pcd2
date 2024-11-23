@@ -1,3 +1,5 @@
-Flask     # Framework utama untuk aplikasi web
-mysql-connector-python  # Untuk koneksi MySQL
-pymysql        # Library alternatif untuk MySQL dengan Python
+Flask
+mysql-connector-python
+pymysql
+opencv-python
+easyocr

@@ -138,39 +138,45 @@
             <div class="card">
                 <div class="card-body p-4">
                     <h1 class="page-header mb-4">Produk Keluar</h1>
+                    <!-- <form action="/api/product_exit" method="POST" id="productExitForm"> -->
                     <form action="/api/product_exit" method="POST" id="productExitForm">
-                        <!-- Barcode Field -->
-                        <div class="mb-3">
-                            <label for="barcode" class="form-label">Barcode</label>
-                            <div class="input-group">
-                                <input type="text" id="barcode" name="barcode" class="form-control" required>
-                                <button type="button" class="btn btn-secondary" id="toggleScanner">
-                                    <i class="fas fa-camera"></i> Scan
-                                </button>
+                        <form action="/api/count_herbalife" method="POST" id="productExitForm"
+                            enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="barcode" class="form-label">Barcode</label>
+                                <div class="input-group">
+                                    <input type="text" id="barcode" name="barcode" class="form-control" required>
+                                    <button type="button" class="btn btn-secondary" id="toggleScanner">
+                                        <i class="fas fa-camera"></i> Scan
+                                    </button>
+                                </div>
+                                <div id="reader" class="scanner-container"></div>
                             </div>
-                            <div id="reader" class="scanner-container"></div>
-                        </div>
 
-                        <!-- Nama Produk Field (read-only) -->
-                        <div class="mb-3">
-                            <label for="nama_produk" class="form-label">Nama Produk</label>
-                            <input type="text" id="nama_produk" name="nama_produk" class="form-control" readonly
-                                required>
-                        </div>
+                            <div class="mb-3">
+                                <label for="nama_produk" class="form-label">Nama Produk</label>
+                                <input type="text" id="nama_produk" name="nama_produk" class="form-control" readonly
+                                    required>
+                            </div>
 
-                        <!-- Jumlah Keluar Field -->
-                        <div class="mb-3">
-                            <label for="jumlah" class="form-label">Jumlah Keluar</label>
-                            <input type="number" id="jumlah" name="quantity" class="form-control" min="1" required>
-                        </div>
+                            <!-- Gambar Field untuk Input -->
+                            <div class="mb-3">
+                                <label for="gambar_produk" class="form-label">Unggah Gambar Produk</label>
+                                <input type="file" id="gambar_produk" name="gambar_produk" class="form-control"
+                                    accept="image/*">
+                            </div>
 
-                        <!-- Waktu Keluar Field (hidden) -->
-                        <input type="hidden" id="waktu_keluar" name="waktu_keluar">
+                            <div class="mb-3">
+                                <label for="jumlah" class="form-label">Jumlah Keluar</label>
+                                <input type="number" id="jumlah" name="quantity" class="form-control" min="1" required>
+                            </div>
 
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-primary">Simpan</button>
-                        </div>
-                    </form>
+                            <input type="hidden" id="waktu_keluar" name="waktu_keluar">
+
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                            </div>
+                        </form>
                 </div>
             </div>
         </div>
@@ -242,6 +248,38 @@
             } else {
                 html5QrCode.stop();
                 scannerContainer.classList.remove('active');
+            }
+        });
+
+        // Menangani event ketika file gambar diunggah
+        document.getElementById('gambar_produk').addEventListener('change', async function (event) {
+            const formData = new FormData(document.getElementById('productExitForm'));  // Mengambil data form termasuk gambar
+            const fileInput = document.getElementById('gambar_produk');
+
+            // Periksa apakah ada gambar yang dipilih
+            if (fileInput.files.length > 0) {
+                try {
+                    // Kirim gambar ke backend untuk diproses
+                    const response = await fetch('/api/count_herbalife', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        // Ambil hasil perhitungan jumlah stok Herbalife dalam gambar
+                        const herbalifeCount = result.stok_herbalife || 0;
+
+                        // Masukkan hasil jumlah ke input quantity
+                        document.getElementById('jumlah').value = herbalifeCount;  // Isi dengan jumlah hasil OCR
+                    } else {
+                        alert(`Terjadi kesalahan: ${result.error}`);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mengunggah gambar');
+                }
             }
         });
     </script>

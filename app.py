@@ -4,6 +4,8 @@ from flask import Flask, render_template, jsonify, request, send_from_directory
 import mysql.connector
 from mysql.connector import Error
 import pymysql
+import cv2
+import easyocr
 
 app = Flask(__name__)
 
@@ -253,6 +255,38 @@ def out_stock():
         '''
 
     return render_template('produk_keluar.html')
+
+@app.route('/api/count_herbalife', methods=['POST'])
+def count_herbalife():
+    if 'gambar_produk' not in request.files:
+        return jsonify({"error": "No image provided"}), 400
+    
+    image_file = request.files['gambar_produk']
+    if image_file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    
+    try:
+        # Simpan gambar yang diunggah
+        image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
+        image_file.save(image_path)
+
+        # Membaca gambar dan menggunakan EasyOCR untuk mendeteksi teks
+        image = cv2.imread(image_path)
+        reader = easyocr.Reader(['en'], gpu=True)
+        result = reader.readtext(image)
+
+        herbalife_count = 0
+        # Menentukan jumlah kemunculan kata "HERBALIFE" dalam gambar
+        for (bbox, text, confidence) in result:
+            if 'HERBALIFE' in text.upper():
+                herbalife_count += 1
+        
+        return jsonify({"stok_herbalife": herbalife_count}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
