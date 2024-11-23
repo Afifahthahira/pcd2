@@ -1,7 +1,0 @@
-CREATE TABLE products (
-    id INT AUTO_INCREMENT PRIMARY KEY,  -- ID produk (No)
-    barcode VARCHAR(20) NOT NULL,       -- Barcode produk
-    image VARCHAR(255),                 -- URL atau path gambar produk
-    name VARCHAR(255) NOT NULL,         -- Nama produk
-    stock INT NOT NULL                  -- Stok produk
-);
