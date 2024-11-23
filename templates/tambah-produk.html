@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,9 +12,9 @@
     <style>
         :root {
             --primary-bg: #f8f9fa;
-            --card-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            --card-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
         }
-        
+
         body {
             background-color: var(--primary-bg);
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -46,16 +47,18 @@
             color: #555;
         }
 
-        .form-control, .form-select {
+        .form-control,
+        .form-select {
             border-radius: 10px;
             border: 1px solid #eee;
             padding: 0.75rem 1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
-        .form-control:focus, .form-select:focus {
+        .form-control:focus,
+        .form-select:focus {
             border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
         }
 
         .btn-action {
@@ -84,69 +87,118 @@
             border-radius: 15px;
             overflow: hidden;
         }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background: #343a40;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #495057;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
     </style>
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light mb-4">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h4 class="text-center">HerbaLife</h4>
+        <hr>
+        <a href="/">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="/add_product" class="active">
+            <i class="fas fa-plus"></i> Tambah Produk
+        </a>
+        <a href="/produk_masuk">
+            <i class="fas fa-box"></i> Produk Masuk
+        </a>
+        <a href="/produk_keluar">
+            <i class="fas fa-truck"></i> Produk Keluar
+        </a>
+    </div>
+
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-boxes me-2"></i>
+                    Tambah Produk
+                </a>
+            </div>
+        </nav>
+
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-boxes me-2"></i>
-                Dashboard Produk
-            </a>
-        </div>
-    </nav>
+            <div class="mb-4">
+                <a href="/" class="text-secondary text-decoration-none">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Daftar Produk
+                </a>
+            </div>
 
-    <div class="container">
-        <div class="mb-4">
-            <a href="/" class="text-secondary text-decoration-none">
-                <i class="fas fa-arrow-left"></i> Kembali ke Daftar Produk
-            </a>
-        </div>
+            <div class="card">
+                <div class="card-body p-4">
+                    <h1 class="page-header mb-4">Tambah Produk Baru</h1>
 
-        <div class="card">
-            <div class="card-body p-4">
-                <h1 class="page-header mb-4">Tambah Produk Baru</h1>
-                
-                <form action="/api/add_product" method="POST" enctype="multipart/form-data">
-                    <div class="row g-4">
-                        <div class="col-12 col-md-6">
-                            <div class="mb-3">
-                                <label for="barcode" class="form-label">Barcode</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="barcode" name="barcode" required>
-                                    <button type="button" class="btn btn-secondary" id="toggleScanner">
-                                        <i class="fas fa-camera"></i> Scan Barcode
-                                    </button>
+                    <form action="/api/add_product" method="POST" enctype="multipart/form-data">
+                        <div class="row g-4">
+                            <div class="col-12 col-md-6">
+                                <div class="mb-3">
+                                    <label for="barcode" class="form-label">Barcode</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="barcode" name="barcode" required>
+                                        <button type="button" class="btn btn-secondary" id="toggleScanner">
+                                            <i class="fas fa-camera"></i> Scan Barcode
+                                        </button>
+                                    </div>
+                                    <div id="reader" class="scanner-container"></div>
                                 </div>
-                                <div id="reader" class="scanner-container"></div>
+                                <div class="mb-3">
+                                    <label for="nama" class="form-label">Nama Produk</label>
+                                    <input type="text" class="form-control" id="nama" name="nama" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="stok" class="form-label">Stok</label>
+                                    <input type="number" class="form-control" id="stok" name="stok" min="0" required>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="nama" class="form-label">Nama Produk</label>
-                                <input type="text" class="form-control" id="nama" name="nama" required>
+                            <div class="col-12 col-md-6">
+                                <div class="mb-3">
+                                    <label for="gambar" class="form-label">Gambar Produk</label>
+                                    <input type="file" class="form-control" id="gambar" name="gambar" accept="image/*"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Preview Gambar</label>
+                                    <img src="#" alt="Preview" class="preview-image" id="imagePreview">
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="stok" class="form-label">Stok</label>
-                                <input type="number" class="form-control" id="stok" name="stok" min="0" required>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="submit" class="btn btn-primary">Simpan Produk</button>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <div class="mb-3">
-                                <label for="gambar" class="form-label">Gambar Produk</label>
-                                <input type="file" class="form-control" id="gambar" name="gambar" accept="image/*" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Preview Gambar</label>
-                                <img src="#" alt="Preview" class="preview-image" id="imagePreview">
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="index.html" class="btn btn-secondary">Batal</a>
-                                <button type="submit" class="btn btn-primary">Simpan Produk</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -164,7 +216,7 @@
                 scannerContainer.classList.add('active');
                 html5QrCode = new Html5Qrcode("reader");
                 html5QrCode.start(
-                    { facingMode: "environment" }, 
+                    { facingMode: "environment" },
                     { fps: 10, qrbox: 250 },
                     (decodedText) => {
                         document.getElementById('barcode').value = decodedText;
@@ -194,4 +246,5 @@
         });
     </script>
 </body>
+
 </html>

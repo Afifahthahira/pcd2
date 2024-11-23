@@ -1,9 +1,20 @@
-from flask import Flask, render_template, jsonify, request
+import os
+from werkzeug.utils import secure_filename
+from flask import Flask, render_template, jsonify, request, send_from_directory
 import mysql.connector
 from mysql.connector import Error
 import pymysql
 
 app = Flask(__name__)
+
+# Konfigurasi folder uploads
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Route untuk melayani file di folder uploads
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 # Konfigurasi database
 db_config = {
@@ -49,34 +60,37 @@ def add():
 # API untuk menambahkan produk
 @app.route('/api/add_product', methods=['POST'])
 def api_add_product():
-    try:
-        # Ambil data dari form
-        barcode = request.form.get('barcode')
-        name = request.form.get('nama')
-        stock = request.form.get('stok')
+    # Ambil data dari form
+    barcode = request.form.get('barcode')
+    name = request.form.get('nama')
+    stock = request.form.get('stok')
 
-        # # Ambil file gambar
-        # image = request.files.get('gambar')
-        # if not image:
-        #     return jsonify({'error': 'File gambar wajib diunggah.'}), 400
+    # Ambil file gambar
+    image = request.files.get('gambar')
 
-        # Simpan gambar ke folder lokal (opsional, jika ingin menyimpan file)
-        # image_path = f"uploads/{image.filename}"
-        # image.save(image_path)
+    # Simpan gambar ke folder lokal
+    filename = secure_filename(image.filename)
+    image_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    image.save(image_path)
 
-        # Simpan data ke database
-        conn = get_db_connection()
-        if conn:
-            cursor = conn.cursor()
-            query = "INSERT INTO products (barcode, name, stock) VALUES (%s, %s, %s)"
-            cursor.execute(query, (barcode, name, stock))
-            conn.commit()
-            return jsonify({'message': 'Produk berhasil ditambahkan!'}), 201
-        else:
-            return jsonify({'error': 'Database connection failed.'}), 500
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+    # Simpan data ke database
+    conn = get_db_connection()
+    with conn.cursor() as cursor:
+        query = "INSERT INTO products (barcode, image, name, stock) VALUES (%s, %s, %s, %s)"
+        cursor.execute(query, (barcode, image_path, name, stock))
+        conn.commit()
 
+    # Respons setelah berhasil menambahkan produk
+    response = '''
+        <script>
+            alert("Produk berhasil ditambahkan!");
+            window.location.href = "/add_product";  // Arahkan kembali ke halaman tambah produk
+        </script>
+    '''
+    # Tutup koneksi
+    conn.close()
+
+    return response
 
 # API untuk mendapatkan daftar produk
 @app.route('/api/products', methods=['GET'])
@@ -100,28 +114,36 @@ def api_get_products():
 # API to delete a product
 @app.route('/api/delete_product', methods=['POST'])
 def api_delete_product():
-    try:
-        # Get barcode from the request
-        barcode = request.form.get('barcode')
+    # Ambil barcode dari permintaan
+    barcode = request.form.get('barcode')
+    conn = get_db_connection()
 
-        # Connect to the database
-        conn = get_db_connection()
-        if conn:
-            cursor = conn.cursor()
-            query = "DELETE FROM products WHERE barcode = %s"
-            cursor.execute(query, (barcode,))
-            conn.commit()
+    # Eksekusi query untuk menghapus produk
+    with conn.cursor() as cursor:
+        query = "DELETE FROM products WHERE barcode = %s"
+        cursor.execute(query, (barcode,))
+        conn.commit()
 
-            # Check if any rows were affected
-            if cursor.rowcount > 0:
-                return jsonify({'message': 'Produk berhasil dihapus!'}), 200
-            else:
-                return jsonify({'error': 'Produk tidak ditemukan.'}), 404
+        # Cek apakah ada baris yang terpengaruh
+        if cursor.rowcount > 0:
+            response = '''
+                <script>
+                    alert("Produk berhasil dihapus!");
+                    window.location.href = "/";
+                </script>
+            '''
         else:
-            return jsonify({'error': 'Database connection failed.'}), 500
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
+            response = '''
+                <script>
+                    alert("Produk tidak ditemukan.");
+                    window.location.href = "/";
+                </script>
+            '''
 
+    # Tutup koneksi
+    conn.close()
+
+    return response
 
 # produk masuk
 
