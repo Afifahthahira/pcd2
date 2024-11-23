@@ -281,6 +281,7 @@ def count_herbalife():
             if 'HERBALIFE' in text.upper():
                 herbalife_count += 1
         
+        os.remove(image_path)
         return jsonify({"stok_herbalife": herbalife_count}), 200
 
     except Exception as e:

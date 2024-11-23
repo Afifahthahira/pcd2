@@ -2,7 +2,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 # Baca gambar
-image = cv2.imread("shake-herbalife.jpg")
+image = cv2.imread("test.jpg")
 
 # Ubah gambar ke grayscale
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

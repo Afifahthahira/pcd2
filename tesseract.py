@@ -2,7 +2,7 @@ import pytesseract
 import cv2
 
 # Path ke gambar
-image_path = 'image2.jpg'  # Ganti dengan path gambar
+image_path = 'test.jpg'  # Ganti dengan path gambar
 image = cv2.imread(image_path)
 
 # Menggunakan pytesseract untuk membaca teks dari gambar
