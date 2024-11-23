@@ -89,7 +89,6 @@ def api_add_product():
     '''
     # Tutup koneksi
     conn.close()
-
     return response
 
 # API untuk mendapatkan daftar produk
@@ -142,77 +141,118 @@ def api_delete_product():
 
     # Tutup koneksi
     conn.close()
-
     return response
 
-# produk masuk
 
-# Rute untuk menampilkan halaman Produk Masuk
-@app.route('/produk_masuk')
-def produk_masuk():
-    return render_template('produk_masuk.html')  # Template untuk produk masuk
-
-# API untuk menambahkan produk yang masuk
-@app.route('/api/produk_masuk', methods=['POST'])
-def api_produk_masuk():
-    try:
-        # Ambil data dari form
-        barcode = request.form.get('barcode')
-        jumlah_masuk = request.form.get('jumlah_masuk')
-
-        # Simpan data ke database
-        conn = get_db_connection()
-        if conn:
-            cursor = conn.cursor()
-            query = "UPDATE products SET stock = stock + %s WHERE barcode = %s"
-            cursor.execute(query, (jumlah_masuk, barcode))
-            conn.commit()
-            return jsonify({'message': 'Produk berhasil ditambahkan ke stok!'}), 201
-        else:
-            return jsonify({'error': 'Database connection failed.'}), 500
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-    
 # produk keluar
-
 @app.route('/produk_keluar', methods=['GET', 'POST'])
 def produk_keluar():
-    if request.method == 'POST':
-        try:
-            # Ambil data dari form
-            barcode = request.form.get('barcode')
-            quantity = int(request.form.get('quantity'))
-
-            # Koneksi ke database
-            conn = get_db_connection()
-            if conn:
-                cursor = conn.cursor()
-
-                # Cek stok produk yang ada
-                cursor.execute("SELECT stock FROM products WHERE barcode = %s", (barcode,))
-                product = cursor.fetchone()
-
-                if product:
-                    current_stock = product[0]
-
-                    # Periksa apakah stok cukup
-                    if current_stock >= quantity:
-                        # Kurangi stok
-                        new_stock = current_stock - quantity
-                        cursor.execute("UPDATE products SET stock = %s WHERE barcode = %s", (new_stock, barcode))
-                        conn.commit()
-                        return jsonify({'message': 'Produk berhasil dikeluarkan, stok diperbarui!'}), 200
-                    else:
-                        return jsonify({'error': 'Stok tidak cukup untuk produk ini.'}), 400
-                else:
-                    return jsonify({'error': 'Produk tidak ditemukan.'}), 404
-            else:
-                return jsonify({'error': 'Database connection failed.'}), 500
-        except Exception as e:
-            return jsonify({'error': str(e)}), 400
-
     return render_template('produk_keluar.html')
 
+
+@app.route('/api/get_product_by_barcode', methods=['POST'])
+def get_product_by_barcode():
+    barcode = request.json.get('barcode')
+    print(f"Barcode received: {barcode}")  # Debugging barcode input
+    # if not barcode:
+    #     return jsonify({'error': 'Barcode tidak boleh kosong.'}), 400
+
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT name FROM products WHERE barcode = %s"
+        cursor.execute(query, (barcode,))
+        product = cursor.fetchone()
+        print(f"Query result: {product}")  # Debugging hasil query
+
+        if product:
+            return jsonify({'name': product['name']}), 200
+        else:
+            return jsonify({'error': 'Produk tidak ditemukan.'}), 404
+    else:
+        return jsonify({'error': 'Gagal terhubung ke database.'}), 500
+
+@app.route('/api/product_exit', methods=['GET', 'POST'])
+def out_stock():
+    conn = None
+    cursor = None
+    if request.method == 'POST':
+        # Ambil data dari form
+        barcode = request.form.get('barcode')
+        quantity = request.form.get('quantity')
+
+        # Cek apakah 'quantity' ada dan dapat dikonversi ke integer
+        if quantity is None or quantity == '':
+            return '''
+                <script>
+                    alert("Quantity tidak boleh kosong.");
+                    window.location.href = "/";
+                </script>
+            '''
+        try:
+            quantity = int(quantity)
+        except ValueError:
+            return '''
+                <script>
+                    alert("Quantity harus berupa angka.");
+                    window.location.href = "/produk_keluar";
+                </script>
+            '''
+
+        # Koneksi ke database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Mulai transaksi secara eksplisit
+        conn.start_transaction()
+
+        # Cek stok produk berdasarkan barcode
+        cursor.execute("SELECT name, stock FROM products WHERE barcode = %s", (barcode,))
+        product = cursor.fetchone()
+
+        if not product:
+            return '''
+                <script>
+                    alert("Produk tidak ditemukan.");
+                    window.location.href = "/produk_keluar";
+                </script>
+            '''
+
+        product_name, current_stock = product
+
+        # Periksa apakah stok cukup
+        if current_stock < quantity:
+            return '''
+                <script>
+                    alert("Stok tidak cukup untuk produk ini.");
+                    window.location.href = "/produk_keluar";
+                </script>
+            '''
+
+        # Kurangi stok di tabel 'products'
+        cursor.execute("UPDATE products SET stock = stock - %s WHERE barcode = %s", (quantity, barcode))
+
+        # Simpan transaksi ke tabel 'produk_keluar'
+        cursor.execute(
+            "INSERT INTO produk_keluar (product_name, jumlah_keluar) VALUES (%s, %s)",
+            (product_name, quantity)
+        )
+
+        # Commit transaksi
+        conn.commit()
+
+        # Tutup koneksi
+        conn.close()
+
+        # Kirimkan response pop-up dan redirect
+        return '''
+            <script>
+                alert("Produk berhasil dikeluarkan, stok diperbarui!");
+                window.location.href = "/produk_keluar";
+            </script>
+        '''
+
+    return render_template('produk_keluar.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Produk Keluar - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -30,6 +30,37 @@
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
         }
 
+        .page-header {
+            color: #333;
+            font-weight: 600;
+            font-size: 1.75rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 10px;
+            border: 1px solid #eee;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
+        }
+
+        .btn-action {
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+            border-radius: 10px;
+        }
+
         .scanner-container {
             display: none;
             margin-top: 1rem;
@@ -38,49 +69,109 @@
         .scanner-container.active {
             display: block;
         }
+
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            background: #343a40;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #495057;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
     </style>
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-boxes me-2"></i> Dashboard Produk Keluar
-            </a>
-        </div>
-    </nav>
+    <div class="sidebar">
+        <h4 class="text-center">HerbaLife</h4>
+        <hr>
+        <a href="/">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="/add_product">
+            <i class="fas fa-plus"></i> Tambah Produk
+        </a>
+        <a href="/produk_keluar" class="active">
+            <i class="fas fa-truck"></i> Produk Keluar
+        </a>
+    </div>
 
-    <div class="container">
-        
-        <div class="mb-4">
-            <a href="/" class="text-secondary text-decoration-none">
-                <i class="fas fa-arrow-left"></i> Kembali ke Daftar Produk
-            </a>
-        </div>
 
-        <div class="card">
-            <div class="card-body">
-                <h1 class="mb-4">Form Produk Keluar</h1>
-                <form action="/api/product_exit" method="POST">
-                    <div class="mb-3">
-                        <label for="barcode" class="form-label">Barcode</label>
-                        <div class="input-group">
-                            <input type="text" id="barcode" name="barcode" class="form-control" required>
-                            <button type="button" class="btn btn-secondary" id="toggleScanner">
-                                <i class="fas fa-camera"></i> Scan
-                            </button>
+    <div class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light mb-4">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-boxes me-2"></i>
+                    Tambah Produk
+                </a>
+            </div>
+        </nav>
+
+        <div class="container my-4">
+            <div class="card">
+                <div class="card-body p-4">
+                    <h1 class="page-header mb-4">Produk Keluar</h1>
+                    <form action="/api/product_exit" method="POST" id="productExitForm">
+                        <!-- Barcode Field -->
+                        <div class="mb-3">
+                            <label for="barcode" class="form-label">Barcode</label>
+                            <div class="input-group">
+                                <input type="text" id="barcode" name="barcode" class="form-control" required>
+                                <button type="button" class="btn btn-secondary" id="toggleScanner">
+                                    <i class="fas fa-camera"></i> Scan
+                                </button>
+                            </div>
+                            <div id="reader" class="scanner-container"></div>
                         </div>
-                        <div id="reader" class="scanner-container"></div>
-                    </div>
 
-                    <div class="mb-3">
-                        <label for="jumlah" class="form-label">Jumlah Keluar</label>
-                        <input type="number" id="jumlah" name="jumlah" class="form-control" min="1" required>
-                    </div>
+                        <!-- Nama Produk Field (read-only) -->
+                        <div class="mb-3">
+                            <label for="nama_produk" class="form-label">Nama Produk</label>
+                            <input type="text" id="nama_produk" name="nama_produk" class="form-control" readonly
+                                required>
+                        </div>
 
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </div>
-                </form>
+                        <!-- Jumlah Keluar Field -->
+                        <div class="mb-3">
+                            <label for="jumlah" class="form-label">Jumlah Keluar</label>
+                            <input type="number" id="jumlah" name="quantity" class="form-control" min="1" required>
+                        </div>
+
+                        <!-- Waktu Keluar Field (hidden) -->
+                        <input type="hidden" id="waktu_keluar" name="waktu_keluar">
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -88,29 +179,72 @@
     <script>
         const scannerContainer = document.getElementById('reader');
         const toggleScanner = document.getElementById('toggleScanner');
-        let html5QrCode = null;
+        const barcodeInput = document.getElementById('barcode');
+        const namaProdukInput = document.getElementById('nama_produk');
+        const waktuKeluarInput = document.getElementById('waktu_keluar');
+        let html5QrCode;
 
+        // Function to auto-fill nama_produk based on barcode
+        barcodeInput.addEventListener('input', async function () {
+            const barcode = barcodeInput.value;
+            if (barcode) {
+                try {
+                    const response = await fetch(`/api/get_product_by_barcode`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ barcode }),
+                    });
+
+                    if (response.ok) {
+                        const product = await response.json();
+                        namaProdukInput.value = product.name || 'Produk tidak ditemukan';
+                    } else {
+                        namaProdukInput.value = 'Produk tidak ditemukan';
+                    }
+                } catch (error) {
+                    console.error('Error fetching product:', error);
+                    namaProdukInput.value = 'Error fetching product';
+                }
+            } else {
+                namaProdukInput.value = '';
+            }
+        });
+
+        // Fill waktu_keluar with current timestamp on form submission
+        document.getElementById('productExitForm').addEventListener('submit', function () {
+            const now = new Date();
+            waktuKeluarInput.value = now.toISOString();
+        });
+
+        // Barcode scanner using HTML5-QRCode
         toggleScanner.addEventListener('click', function () {
             if (!html5QrCode) {
-                scannerContainer.classList.add('active');
                 html5QrCode = new Html5Qrcode("reader");
+            }
+
+            if (!scannerContainer.classList.contains('active')) {
+                scannerContainer.classList.add('active');
                 html5QrCode.start(
                     { facingMode: "environment" },
                     { fps: 10, qrbox: 250 },
                     (decodedText) => {
-                        document.getElementById('barcode').value = decodedText;
+                        barcodeInput.value = decodedText;
+                        barcodeInput.dispatchEvent(new Event('input')); // Trigger input event
                         html5QrCode.stop();
-                        html5QrCode = null;
                         scannerContainer.classList.remove('active');
                     },
-                    (error) => console.warn(error)
-                );
+                    (errorMessage) => {
+                        console.warn(errorMessage); // Log errors during scanning
+                    }
+                ).catch((err) => console.error(err));
             } else {
                 html5QrCode.stop();
-                html5QrCode = null;
                 scannerContainer.classList.remove('active');
             }
         });
     </script>
 </body>
+
 </html>
