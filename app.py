@@ -1,4 +1,5 @@
 import os
+import random  # Add the import here
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, jsonify, request, send_from_directory
 import mysql.connector
@@ -151,14 +152,10 @@ def api_delete_product():
 def produk_keluar():
     return render_template('produk_keluar.html')
 
-
 @app.route('/api/get_product_by_barcode', methods=['POST'])
 def get_product_by_barcode():
     barcode = request.json.get('barcode')
     print(f"Barcode received: {barcode}")  # Debugging barcode input
-    # if not barcode:
-    #     return jsonify({'error': 'Barcode tidak boleh kosong.'}), 400
-
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
@@ -256,6 +253,7 @@ def out_stock():
 
     return render_template('produk_keluar.html')
 
+# Updated API to count "HERBALIFE" in the image with random file name
 @app.route('/api/count_herbalife', methods=['POST'])
 def count_herbalife():
     if 'gambar_produk' not in request.files:
@@ -266,8 +264,13 @@ def count_herbalife():
         return jsonify({"error": "No selected file"}), 400
     
     try:
-        # Simpan gambar yang diunggah
-        image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
+        # Menentukan nama file baru dengan angka acak 4 digit
+        filename, ext = os.path.splitext(image_file.filename)
+        random_number = random.randint(1000, 9999)
+        new_filename = f"{filename}_{random_number}{ext}"
+
+        # Simpan gambar yang diunggah dengan nama baru
+        image_path = os.path.join(UPLOAD_FOLDER, new_filename)
         image_file.save(image_path)
 
         # Membaca gambar dan menggunakan EasyOCR untuk mendeteksi teks
@@ -286,8 +289,6 @@ def count_herbalife():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)

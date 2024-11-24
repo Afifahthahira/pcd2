@@ -4,137 +4,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Produk</title>
+    <title>Dashboard Produk - Herbalife Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-bg: #f8f9fa;
-            --card-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            --herbalife-green: #009c3b;
+            --herbalife-light-green: #7cc242;
+            --herbalife-dark: #025927;
+            --accent-yellow: #ffd700;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
 
         body {
-            background-color: var(--primary-bg);
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e9 100%);
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
+        /* Enhanced Sidebar Styling */
+        .sidebar {
+            width: 300px;
+            height: 100vh;
+            position: fixed;
+            background: linear-gradient(165deg, var(--herbalife-dark) 0%, var(--herbalife-green) 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .sidebar .logo-container {
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .logo-container i {
+            font-size: 3rem;
+            color: var(--accent-yellow);
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .sidebar h4 {
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-top: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 1rem 1.5rem;
+            margin: 0.5rem 0;
+            border-radius: 15px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .sidebar a i {
+            margin-right: 1rem;
+            width: 24px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced Main Content */
+        .main-content {
+            margin-left: 300px;
+            padding: 2rem 3rem;
+            min-height: 100vh;
+        }
+
         .navbar {
-            background: white !important;
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(10px);
             box-shadow: var(--card-shadow);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            padding: 1rem 2rem;
         }
 
         .navbar-brand {
-            color: #333 !important;
-            font-weight: 600;
+            color: var(--herbalife-dark) !important;
+            font-weight: 800;
+            font-size: 1.75rem;
+            letter-spacing: 0.5px;
         }
 
+        .navbar-brand i {
+            color: var(--herbalife-green);
+        }
+
+        /* Enhanced Card and Table Styling */
         .card {
             border: none;
-            border-radius: 15px;
+            border-radius: 25px;
             box-shadow: var(--card-shadow);
-            transition: transform 0.2s;
+            background: white;
+            overflow: hidden;
+            border-top: 5px solid var(--herbalife-green);
         }
 
-        .card:hover {
-            transform: translateY(-5px);
+        .page-header {
+            color: var(--herbalife-dark);
+            font-weight: 800;
+            font-size: 2.25rem;
+            margin-bottom: 2rem;
+            position: relative;
+            padding-bottom: 1rem;
         }
 
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: var(--herbalife-green);
+            border-radius: 2px;
+        }
+
+        /* Enhanced Table Styling */
         .table {
             margin-bottom: 0;
         }
 
         .table thead th {
-            background-color: #fff;
-            color: #333;
-            font-weight: 600;
-            border-bottom: 2px solid #f0f0f0;
+            background-color: #f8fff9;
+            color: var(--herbalife-dark);
+            font-weight: 700;
+            padding: 1.5rem;
+            border-bottom: 2px solid #e3f2e5;
         }
 
         .table td {
+            padding: 1.2rem 1.5rem;
             vertical-align: middle;
-            color: #555;
+            color: #444;
         }
 
-        .img-thumbnail {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
+        /* Enhanced Stock Badge */
         .stock-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .page-header {
-            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
             font-weight: 600;
-            font-size: 1.75rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .search-container {
-            position: relative;
-            max-width: 300px;
+        /* Enhanced Button Styling */
+        .btn-outline-primary {
+            color: var(--herbalife-green);
+            border: 2px solid var(--herbalife-green);
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
         }
 
-        .search-container i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #999;
+        .btn-outline-primary:hover {
+            background: var(--herbalife-green);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 156, 59, 0.2);
         }
 
-        .search-input {
-            padding-left: 40px;
-            border-radius: 20px;
-            border: 1px solid #eee;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        .btn-outline-danger {
+            color: #dc3545;
+            border: 2px solid #dc3545;
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
         }
 
+        .btn-outline-danger:hover {
+            background: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+        }
+
+        /* Enhanced Image Styling */
+        .img-thumbnail {
+            border-radius: 15px;
+            border: 3px solid var(--herbalife-light-green);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .img-thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+        /* Enhanced Barcode Styling */
         .barcode {
             font-family: monospace;
-            color: #666;
+            color: var(--herbalife-dark);
+            letter-spacing: 1px;
+            font-weight: 600;
         }
 
-        .btn-add {
-            border-radius: 10px;
-            padding: 8px 20px;
-            font-weight: 500;
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 250px;
+            }
+            .main-content {
+                margin-left: 250px;
+                padding: 2rem;
+            }
         }
 
-        .btn-add i {
-            margin-right: 8px;
-        }
-
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            background: #343a40;
-            color: white;
-            padding: 20px;
-        }
-
-        .sidebar a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            margin: 5px 0;
-            border-radius: 5px;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background: #495057;
-        }
-
-        .main-content {
-            margin-left: 260px;
-            padding: 20px;
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 1rem;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .card {
+                margin: 1rem;
+            }
         }
     </style>
 </head>
@@ -142,8 +250,10 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <h4 class="text-center">HerbaLife</h4>
-        <hr>
+        <div class="logo-container">
+            <i class="fas fa-leaf"></i>
+            <h4>HERBALIFE</h4>
+        </div>
         <a href="/" class="active">
             <i class="fas fa-home"></i> Dashboard
         </a>
@@ -157,25 +267,19 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <nav class="navbar navbar-expand-lg navbar-light mb-4">
+        <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">
-                    <i class="fas fa-boxes me-2"></i>
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-leaf me-2"></i>
                     Dashboard Produk
                 </a>
             </div>
         </nav>
 
-        <div class="container">
+        <div class="container-fluid">
             <div class="row align-items-center mb-4">
-                <div class="col-12 col-md-4">
-                    <h1 class="page-header m-0">Daftar Produk</h1>
-                </div>
-                <div class="col-12 col-md-4 my-3 my-md-0">
-                    <div class="search-container">
-                        <i class="fas fa-search"></i>
-                        <input type="text" class="form-control search-input" placeholder="Cari produk...">
-                    </div>
+                <div class="col-12">
+                    <h1 class="page-header">Daftar Produk</h1>
                 </div>
             </div>
 
@@ -213,14 +317,13 @@
                                         </span>
                                     </td>
                                     <td class="text-center pe-4">
-                                        <button class="btn btn-sm btn-outline-primary me-1">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
+                                    
                                         <form action="/api/delete_product" method="POST" style="display:inline;">
                                             <input type="hidden" name="barcode" value="{{ product['barcode'] }}">
                                             <button class="btn btn-sm btn-outline-danger">
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -230,8 +333,9 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
