@@ -9,6 +9,14 @@ import easyocr
 
 app = Flask(__name__)
 
+# Konfigurasi database
+db_config = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': '',
+    'database': 'herbalife'
+}
+
 # Konfigurasi folder uploads
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -17,14 +25,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-# Konfigurasi database
-db_config = {
-    'host': 'localhost',         # Host database
-    'user': 'root',              # Ganti dengan username MySQL Anda
-    'password': '',              # Ganti dengan password MySQL Anda
-    'database': 'herbalife'      # Nama database
-}
 
 # Fungsi untuk koneksi database
 def get_db_connection():
@@ -36,30 +36,31 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         return None
 
-# Serve the home page
+# === ROUTE PAGE ===
 @app.route('/')
 def home():
     # Koneksi ke database
     connection = pymysql.connect(**db_config)
     cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-    # Query untuk mendapatkan data
     cursor.execute("SELECT id, barcode, image, name, stock FROM products")
     products = cursor.fetchall()
 
-    # Tutup koneksi
     cursor.close()
     connection.close()
-
-    # Kirim data ke template
     return render_template('index.html', products=products)
 
-# Serve the "add product" page
-@app.route('/add_product')
+@app.route('/produk_keluar', methods=['GET', 'POST'])
+def produk_keluar():
+    return render_template('produk_keluar.html')
+
+@app.route('/tambah_produk')
 def add():
     return render_template('tambah-produk.html')
 
-# API untuk menambahkan produk
+
+# === ROUTE FUNCTION ===
+# API ADD PRODUCT
 @app.route('/api/add_product', methods=['POST'])
 def api_add_product():
     # Ambil data dari form
@@ -86,40 +87,22 @@ def api_add_product():
     response = '''
         <script>
             alert("Produk berhasil ditambahkan!");
-            window.location.href = "/add_product";  // Arahkan kembali ke halaman tambah produk
+            window.location.href = "/tambah_produk";
         </script>
     '''
-    # Tutup koneksi
+
     conn.close()
     return response
 
-# API untuk mendapatkan daftar produk
-@app.route('/api/products', methods=['GET'])
-def api_get_products():
-    conn = get_db_connection()
-    if conn:
-        cursor = conn.cursor(dictionary=True)
-        try:
-            query = "SELECT * FROM daftar_produk"
-            cursor.execute(query)
-            products = cursor.fetchall()
-            return jsonify(products), 200
-        except Error as e:
-            return jsonify({'error': str(e)}), 500
-        finally:
-            cursor.close()
-            conn.close()
-    else:
-        return jsonify({'error': 'Database connection failed.'}), 500
 
-# API to delete a product
+# API DELETE PRODUCT
 @app.route('/api/delete_product', methods=['POST'])
 def api_delete_product():
     # Ambil barcode dari permintaan
     barcode = request.form.get('barcode')
-    conn = get_db_connection()
 
     # Eksekusi query untuk menghapus produk
+    conn = get_db_connection()
     with conn.cursor() as cursor:
         query = "DELETE FROM products WHERE barcode = %s"
         cursor.execute(query, (barcode,))
@@ -141,23 +124,15 @@ def api_delete_product():
                 </script>
             '''
 
-    # Tutup koneksi
     conn.close()
     return response
 
 
-# produk keluar
-@app.route('/produk_keluar', methods=['GET', 'POST'])
-def produk_keluar():
-    return render_template('produk_keluar.html')
-
-
+# API MENDAPATKAN NAMA BARANG MELALUI BARCODE
 @app.route('/api/get_product_by_barcode', methods=['POST'])
 def get_product_by_barcode():
     barcode = request.json.get('barcode')
-    print(f"Barcode received: {barcode}")  # Debugging barcode input
-    # if not barcode:
-    #     return jsonify({'error': 'Barcode tidak boleh kosong.'}), 400
+    print(f"Barcode received: {barcode}")
 
     conn = get_db_connection()
     if conn:
@@ -174,6 +149,8 @@ def get_product_by_barcode():
     else:
         return jsonify({'error': 'Gagal terhubung ke database.'}), 500
 
+
+# API PRODUK KELUAR DAN MENGURANGI STOCK
 @app.route('/api/product_exit', methods=['GET', 'POST'])
 def out_stock():
     conn = None
@@ -242,8 +219,6 @@ def out_stock():
 
         # Commit transaksi
         conn.commit()
-
-        # Tutup koneksi
         conn.close()
 
         # Kirimkan response pop-up dan redirect
@@ -256,6 +231,8 @@ def out_stock():
 
     return render_template('produk_keluar.html')
 
+
+# API MENGECEK JUMLAH PRODUK MELALUI OCR
 @app.route('/api/count_herbalife', methods=['POST'])
 def count_herbalife():
     if 'gambar_produk' not in request.files:
@@ -286,8 +263,6 @@ def count_herbalife():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
