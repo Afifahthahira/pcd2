@@ -32,6 +32,7 @@
             color: white;
             padding: 2rem;
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+            /*overflow-y: auto; Allow scrolling when content overflows */
         }
 
         .sidebar .logo-container {
@@ -82,6 +83,16 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
+        /* Sidebar Greeting and Logout Button */
+        .sidebar h1 {
+            margin-top: 2rem;
+            font-size: 1.2rem;
+        }
+
+        .sidebar .btn-danger {
+            margin-top: 2rem;
+        }
+
         /* Enhanced Main Content */
         .main-content {
             margin-left: 300px;
@@ -109,7 +120,7 @@
             color: var(--herbalife-green);
         }
 
-        /* Enhanced Card Styling */
+        /* Enhanced Card and Table Styling */
         .card {
             border: none;
             border-radius: 25px;
