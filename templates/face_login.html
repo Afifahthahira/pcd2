@@ -14,18 +14,43 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #e0f7fa, #e8f5e9);
+            font-family: 'Arial', sans-serif;
+            color: #495057;
         }
 
         .video-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .video-container h1 {
+            color: #00796b;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
         }
 
         .video-container img {
-            border: 2px solid #6c757d;
-            border-radius: 10px;
+            border: 4px solid #4caf50;
+            border-radius: 15px;
             max-width: 100%;
             height: auto;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .video-container img:hover {
+            transform: scale(1.05);
+        }
+
+        .text-muted {
+            font-size: 0.9rem;
+            color: #6c757d;
         }
 
         /* Loader Style */
@@ -40,15 +65,27 @@
         }
 
         .message {
-            font-size: 1.2rem;
+            font-size: 1rem;
             margin-top: 10px;
+            color: #00796b;
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            .video-container {
+                padding: 30px;
+            }
+
+            .video-container h1 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="video-container">
-        <h1 class="mb-4 text-center">Login dengan Wajah</h1>
+        <h1 class="mb-4">Login dengan Wajah</h1>
         <img src="{{ url_for('video_feed') }}" alt="Video Stream" id="camera-feed">
         <p class="text-muted mt-3">Pastikan wajah Anda terlihat jelas di kamera</p>
         <div class="loader">
