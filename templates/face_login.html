@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Login</title>
+    <!-- Tambahkan Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+
+        .video-container {
+            text-align: center;
+        }
+
+        .video-container img {
+            border: 2px solid #6c757d;
+            border-radius: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Loader Style */
+        .loader {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .message {
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="video-container">
+        <h1 class="mb-4 text-center">Login dengan Wajah</h1>
+        <img src="{{ url_for('video_feed') }}" alt="Video Stream" id="camera-feed">
+        <p class="text-muted mt-3">Pastikan wajah Anda terlihat jelas di kamera</p>
+        <div class="loader">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="message">Mengalihkan dalam beberapa detik...</div>
+        </div>
+    </div>
+
+    <script>
+        let redirectTriggered = false; // Flag untuk mencegah redirect berulang
+
+        // Periksa status autentikasi secara berkala
+        setInterval(() => {
+            if (!redirectTriggered) { // Cek apakah redirect belum terjadi
+                fetch('/check_authentication')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.authenticated) {
+                            redirectTriggered = true; // Set flag untuk mencegah pemanggilan ulang
+                            console.log("Wajah dikenali, menampilkan loader...");
+                            document.getElementById('camera-feed').style.display = 'none'; // Sembunyikan kamera
+                            document.querySelector('.loader').style.display = 'block'; // Tampilkan loader
+
+                            setTimeout(() => {
+                                window.location.href = '/success'; // Redirect ke halaman sukses setelah 5 detik
+                            }, 5000); // 5000ms = 5 detik
+                        }
+                    });
+            }
+        }, 1000); // Periksa setiap 1 detik
+    </script>
+
+    <!-- Tambahkan Bootstrap JS dan Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

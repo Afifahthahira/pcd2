@@ -305,6 +305,8 @@
         <a href="/produk_keluar">
             <i class="fas fa-truck"></i> Produk Keluar
         </a>
+        <h1>Selamat datang, {{ username }}!</h1>
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
     </div>
 
     <div class="main-content">

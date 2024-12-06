@@ -1,7 +1,8 @@
 import os
-import random  # Add the import here
+import hashlib
+import random
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect, url_for, Response
 import mysql.connector
 from mysql.connector import Error
 import pymysql
@@ -9,6 +10,7 @@ import cv2
 import easyocr
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
 # Konfigurasi folder uploads
 UPLOAD_FOLDER = 'uploads'
@@ -37,9 +39,123 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         return None
 
-# Serve the home page
+
+
+
+# Fungsi untuk membuat hash dari password menggunakan SHA-256
+def hash_password(password: str) -> str:
+    """Menghasilkan hash dari password menggunakan SHA-256."""
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+# Load model LBPH yang sudah dilatih
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+recognizer.read('trainer.yml')
+
+# Load peta label dari file
+id_to_label = {}
+with open('labels.txt', 'r') as f:
+    for line in f:
+        idx, label = line.strip().split(',')
+        id_to_label[int(idx)] = label
+
+# Load Haar Cascade
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Variabel global untuk menyimpan username aktif dan status autentikasi wajah
+active_username = None
+authenticated_face = False
+
+def gen_frames():
+    global active_username, authenticated_face
+    cap = cv2.VideoCapture(0)  # Buka kamera
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.2, 5)
+
+        for (x, y, w, h) in faces:
+            id_num, confidence = recognizer.predict(gray[y:y+h, x:x+w])
+            if confidence < 50:
+                label = id_to_label.get(id_num, "Unknown")
+                if label == active_username:  # Cocokkan dengan username aktif
+                    authenticated_face = True  # Set status autentikasi wajah
+                    # Jangan set session di sini
+                    cap.release()
+                    return
+                text = f"{label} ({100 - confidence:.2f}%)"
+            else:
+                text = "Unknown"
+
+            # Gambar kotak dan teks
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+            cv2.putText(frame, text, (x+5, y-5), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 @app.route('/')
+def login():
+    if 'username' in session and 'authenticated_face' in session and session['authenticated_face']:
+        # Jika sudah login dan sudah terautentikasi wajah, arahkan ke dashboard
+        return redirect(url_for('home'))
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def login_user():
+    global active_username, authenticated_face
+    username = request.form['username']
+    password = request.form['password']
+
+    # Cek apakah username dan password valid di database
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM user WHERE username = %s", (username,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user and user[2] == hash_password(password):  # Bandingkan hash password
+            session['username'] = username
+            active_username = username  # Simpan username ke variabel global
+            authenticated_face = False  # Reset status autentikasi wajah
+            return redirect(url_for('face_login'))  # Redirect ke face login untuk autentikasi wajah
+        else:
+            return render_template('login.html', error="Invalid credentials")
+    else:
+        return render_template('login.html', error="Database connection failed")
+
+@app.route('/face_login')
+def face_login():
+    if 'username' not in session:  # Jika belum login, arahkan ke halaman login
+        return redirect(url_for('login'))
+    if 'authenticated_face' in session and session['authenticated_face']:
+        return redirect(url_for('home'))  # Jika sudah terautentikasi wajah, arahkan ke dashboard
+    return render_template('face_login.html')
+
+@app.route('/video_feed')
+def video_feed():
+    if 'username' not in session:  # Jika belum login, arahkan ke halaman login
+        return redirect(url_for('login'))
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/success')
+def success():
+    global authenticated_face
+    if 'username' in session and authenticated_face:  # Pastikan pengguna sudah login dan wajah sudah terdeteksi
+        session['authenticated_face'] = True  # Set session untuk autentikasi wajah
+        return redirect(url_for('home')) 
+    return redirect(url_for('login')) 
+
+@app.route('/homee')
 def home():
+    if 'username' not in session or 'authenticated_face' not in session or not session['authenticated_face']:
+        # Jika belum login atau belum terautentikasi wajah, arahkan ke halaman face login
+        return redirect(url_for('face_login'))
+    
     # Koneksi ke database
     connection = pymysql.connect(**db_config)
     cursor = connection.cursor(pymysql.cursors.DictCursor)
@@ -53,14 +169,25 @@ def home():
     connection.close()
 
     # Kirim data ke template
-    return render_template('index.html', products=products)
+    return render_template('index.html', products=products, username=session['username'])
 
 # Serve the "add product" page
 @app.route('/tambah_produk')
 def add():
-    return render_template('tambah-produk.html')
+    if 'username' not in session or 'authenticated_face' not in session or not session['authenticated_face']:
+        # Jika belum login atau belum terautentikasi wajah, arahkan ke halaman face login
+        return redirect(url_for('face_login'))
+    return render_template('tambah-produk.html', username=session['username'])
 
-# API untuk menambahkan produk
+# produk keluar
+@app.route('/produk_keluar', methods=['GET', 'POST'])
+def produk_keluar():
+    if 'username' not in session or 'authenticated_face' not in session or not session['authenticated_face']:
+        # Jika belum login atau belum terautentikasi wajah, arahkan ke halaman face login
+        return redirect(url_for('face_login'))
+    return render_template('produk_keluar.html', username=session['username'])
+
+# API untuk menambahkan produk 
 @app.route('/api/add_product', methods=['POST'])
 def api_add_product():
     # Ambil data dari form
@@ -93,25 +220,6 @@ def api_add_product():
     # Tutup koneksi
     conn.close()
     return response
-
-# API untuk mendapatkan daftar produk
-@app.route('/api/products', methods=['GET'])
-def api_get_products():
-    conn = get_db_connection()
-    if conn:
-        cursor = conn.cursor(dictionary=True)
-        try:
-            query = "SELECT * FROM daftar_produk"
-            cursor.execute(query)
-            products = cursor.fetchall()
-            return jsonify(products), 200
-        except Error as e:
-            return jsonify({'error': str(e)}), 500
-        finally:
-            cursor.close()
-            conn.close()
-    else:
-        return jsonify({'error': 'Database connection failed.'}), 500
 
 # API to delete a product
 @app.route('/api/delete_product', methods=['POST'])
@@ -147,15 +255,13 @@ def api_delete_product():
     return response
 
 
-# produk keluar
-@app.route('/produk_keluar', methods=['GET', 'POST'])
-def produk_keluar():
-    return render_template('produk_keluar.html')
-
 @app.route('/api/get_product_by_barcode', methods=['POST'])
 def get_product_by_barcode():
     barcode = request.json.get('barcode')
     print(f"Barcode received: {barcode}")  # Debugging barcode input
+    # if not barcode:
+    #     return jsonify({'error': 'Barcode tidak boleh kosong.'}), 400
+
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
@@ -289,6 +395,19 @@ def count_herbalife():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/logout')
+def logout():
+    session.pop('username', None)  # Hapus session pengguna
+    session.pop('authenticated_face', None)  # Hapus session autentikasi wajah
+    return redirect(url_for('login'))
+    
+@app.route('/check_authentication')
+def check_authentication():
+    global authenticated_face
+    if authenticated_face:
+        return {'authenticated': True}
+    return {'authenticated': False}
 
 if __name__ == '__main__':
     app.run(debug=True)
