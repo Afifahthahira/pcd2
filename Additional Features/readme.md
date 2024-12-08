@@ -1,0 +1,4 @@
+- face recognation => membuka camera dan scanning wajah
+- hash passsword => mengacak password untuk database
+- label dan trainer => dataset setelah treining dataset (yang di tambahkan di web)
+- training dataset => melatih dataset dari wajah-wajah yang ada 
